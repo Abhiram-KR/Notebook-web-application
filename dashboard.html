@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notebook - Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* CSS Variables */
+        :root {
+            --primary-color: #4a90e2;
+            --secondary-color: #f4f6f8;
+            --text-color: #333;
+            --sidebar-width: 250px;
+            --danger-color: #e74c3c;
+            --success-color: #2ecc71;
+            --warning-color: #f1c40f;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--secondary-color);
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Dashboard Section */
+        #dashboard-section {
+            display: flex;
+            height: 100vh;
+        }
+
+        .sidebar {
+            width: var(--sidebar-width);
+            background-color: #2c3e50;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            padding: 1rem;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .nav-item {
+            padding: 12px;
+            cursor: pointer;
+            border-radius: 5px;
+            margin-bottom: 5px;
+            transition: 0.3s;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background-color: var(--primary-color);
+        }
+
+        .nav-footer {
+            margin-top: auto;
+            border-top: 1px solid #444;
+            padding-top: 1rem;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .notebook-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .notebook-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            cursor: pointer;
+            position: relative;
+            transition: transform 0.2s;
+            border-left: 5px solid var(--primary-color);
+        }
+
+        .notebook-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .notebook-title {
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .notebook-meta {
+            font-size: 0.8rem;
+            color: #777;
+        }
+
+        .card-icons {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 0.8rem;
+            color: #888;
+        }
+
+        .icon-lock { color: var(--danger-color); }
+        .icon-pin { color: #f1c40f; }
+
+        /* Editor Overlay */
+        #editor-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+
+        .editor-modal {
+            background: white;
+            width: 80%;
+            height: 80%;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .editor-header {
+            padding: 1rem;
+            border-bottom: 1px solid #ddd;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #f9f9f9;
+        }
+
+        .editor-body {
+            flex: 1;
+            padding: 1rem;
+        }
+
+        .note-title-input {
+            width: 100%;
+            padding: 10px;
+            font-size: 1.5rem;
+            border: none;
+            outline: none;
+            margin-bottom: 1rem;
+        }
+
+        .note-content-area {
+            width: 100%;
+            height: calc(100% - 60px);
+            border: none;
+            resize: none;
+            font-size: 1rem;
+            outline: none;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+
+        .btn:hover { background-color: #357abd; }
+        .btn.btn-success { background-color: var(--success-color); }
+        .btn.btn-success:hover { background-color: #27ae60; }
+
+        /* Toast Notification */
+        #toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 3000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .toast {
+            min-width: 250px;
+            background: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: slideIn 0.3s ease forwards;
+            border-left: 5px solid #ccc;
+        }
+
+        .toast.success { border-left-color: var(--success-color); }
+        .toast.error { border-left-color: var(--danger-color); }
+        .toast i { font-size: 1.2rem; }
+        .toast.success i { color: var(--success-color); }
+        .toast.error i { color: var(--danger-color); }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="toast-container"></div>
+
+    <section id="dashboard-section">
+        <nav class="sidebar">
+            <div class="logo">Notebook</div>
+            <div class="nav-item active">📚 My Notebooks</div>
+            <div class="nav-item">⚡ Quick Notes</div>
+            <div class="nav-item">📌 Pinned Notes</div>
+            <div class="nav-item">📂 Archives</div>
+            
+            <div class="nav-footer">
+                <div class="nav-item" style="background:#e74c3c;" onclick="handleLogout()">Logout</div>
+            </div>
+        </nav>
+
+        <main class="main-content">
+            <header class="header">
+                <h2>My Notebooks</h2>
+                <button class="btn" style="width: auto;" onclick="openEditor()">+ New Note</button>
+            </header>
+
+            <div class="notebook-grid">
+                <div class="notebook-card" onclick="openEditor()">
+                    <div class="card-icons"><span class="icon-pin">📌</span></div>
+                    <div class="notebook-title">Python Project</div>
+                    <div class="notebook-meta">5 Notes • Updated 2h ago</div>
+                </div>
+
+                <div class="notebook-card" style="border-left-color: var(--danger-color);">
+                    <div class="card-icons"><span class="icon-lock">🔒</span></div>
+                    <div class="notebook-title">Personal Diary</div>
+                    <div class="notebook-meta">Password Protected</div>
+                </div>
+
+                <div class="notebook-card" style="border-left-color: var(--success-color);">
+                    <div class="notebook-title">Web Dev Class</div>
+                    <div class="notebook-meta">12 Notes • Updated Yesterday</div>
+                </div>
+            </div>
+        </main>
+    </section>
+
+    <div id="editor-overlay">
+        <div class="editor-modal">
+            <div class="editor-header">
+                <span>Editing Note...</span>
+                <div>
+                    <button class="btn btn-success" style="width:auto;" onclick="closeEditor()">Save</button>
+                    <button class="close-btn" onclick="closeEditor()">&times;</button>
+                </div>
+            </div>
+            <div class="editor-body">
+                <input type="text" class="note-title-input" placeholder="Note Title Here..." value="Python Project Ideas">
+                <textarea class="note-content-area" placeholder="Start typing your note here...">
+1. Client-Server Architecture
+2. Database Schema Design
+3. Flask Routing
+                </textarea>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* --- Check if user is logged in --- */
+        window.addEventListener('load', function() {
+            const user = localStorage.getItem('user');
+            if (!user) {
+                window.location.href = "/";
+            }
+        });
+
+        /* --- UTILITY: Toast Notification System --- */
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            
+            const iconClass = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
+            
+            toast.innerHTML = `<i class="fa ${iconClass}"></i> <span>${message}</span>`;
+            
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.animation = 'slideIn 0.3s ease reverse';
+                setTimeout(() => toast.remove(), 300);
+            }, 4000);
+        }
+
+        /* --- LOGIC: Editor --- */
+        function openEditor() {
+            document.getElementById('editor-overlay').style.display = 'flex';
+        }
+
+        function closeEditor() {
+            document.getElementById('editor-overlay').style.display = 'none';
+            showToast("Note Saved!", "success");
+        }
+
+        /* --- LOGIC: Logout --- */
+        function handleLogout() {
+            localStorage.removeItem('user');
+            showToast("Logged out successfully", "success");
+            setTimeout(() => {
+                window.location.href = "/";
+            }, 1000);
+        }
+    </script>
+</body>
+</html>
