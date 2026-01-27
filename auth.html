@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notebook - Login & Register</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* CSS Variables */
+        :root {
+            --primary-color: #4a90e2;
+            --secondary-color: #f4f6f8;
+            --text-color: #333;
+            --danger-color: #e74c3c;
+            --success-color: #2ecc71;
+            --warning-color: #f1c40f;
+            --yellow-light: #fff8e1;
+            --yellow-mid: #ffecb3;
+            --yellow-dark: #fbc02d;
+            --yellow-accent: #f9a825;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Authentication Section (Login/Register/Forgot) */
+        #auth-section {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                135deg,
+                var(--yellow-light),
+                var(--yellow-mid),
+                #fffde7
+            );
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .auth-card {
+            background: linear-gradient(
+                180deg,
+                #ffffff,
+                #fffde7
+            );
+            padding: 2.5rem;
+            border-radius: 14px;
+            box-shadow: 
+                0 10px 25px rgba(0,0,0,0.12),
+                inset 0 0 0 1px rgba(251,192,45,0.3);
+            width: 380px;
+            text-align: center;
+            border: none;
+            position: relative;
+            display: none; 
+        }
+        
+        .auth-card.active { display: block; animation: fadeIn 0.4s ease; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .auth-card h2 { margin-bottom: 1.5rem; color: #f9a825; }
+        .auth-card p { margin-bottom: 1.5rem; color: #666; font-size: 0.9rem; }
+
+        .input-group { margin-bottom: 1rem; text-align: left; position: relative; }
+        .input-group label { display: block; margin-bottom: 0.5rem; font-size: 0.9rem; font-weight: 600; color: #555; }
+        
+        .input-wrapper { position: relative; }
+        
+        .input-group input { 
+            width: 100%; padding: 12px; padding-right: 40px;
+            border: 1px solid #ddd; border-radius: 6px; 
+            transition: 0.3s;
+        }
+        .input-group input:focus { border-color: var(--primary-color); outline: none; }
+
+        #auth-section input {
+            background: #fffef6;
+        }
+
+        #auth-section input:focus {
+            border-color: var(--yellow-dark);
+            box-shadow: 0 0 0 2px rgba(251,192,45,0.25);
+        }
+
+        /* Password Toggle Icon */
+        .password-toggle {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #888;
+            cursor: pointer;
+        }
+        .password-toggle:hover { color: var(--primary-color); }
+
+        .btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            width: 100%;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+        .btn:hover { background-color: #357abd; }
+
+        #auth-section .btn {
+            background: linear-gradient(
+                135deg,
+                var(--yellow-dark),
+                var(--yellow-accent)
+            );
+            color: #4e342e;
+            font-weight: 700;
+        }
+
+        #auth-section .btn:hover {
+            background: linear-gradient(
+                135deg,
+                var(--yellow-accent),
+                var(--yellow-dark)
+            );
+        }
+        .btn-outline {
+            background: transparent; border: 1px solid #ddd; color: #666; margin-top: 10px;
+        }
+        .btn-outline:hover { border-color: var(--primary-color); color: var(--primary-color); }
+
+        .auth-links { margin-top: 15px; font-size: 0.9rem; }
+        .auth-links a { color: #f57f17; text-decoration: none; cursor: pointer; font-weight: 600; }
+        .auth-links a:hover { text-decoration: underline; }
+
+        /* Toast Notification */
+        #toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 3000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .toast {
+            min-width: 250px;
+            background: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: slideIn 0.3s ease forwards;
+            border-left: 5px solid #ccc;
+        }
+
+        .toast.success { border-left-color: var(--success-color); }
+        .toast.error { border-left-color: var(--danger-color); }
+        .toast i { font-size: 1.2rem; }
+        .toast.success i { color: var(--success-color); }
+        .toast.error i { color: var(--danger-color); }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="toast-container"></div>
+
+    <section id="auth-section">
+        
+        <div id="login-card" class="auth-card active">
+            <h2>Notebook Login</h2>
+            <div class="input-group">
+                <label>Username</label>
+                <input type="text" id="login-user" placeholder="e.g. username123*">
+            </div>
+            <div class="input-group">
+                <label>Password</label>
+                <div class="input-wrapper">
+                    <input type="password" id="login-pass" placeholder="user****">
+                    <i class="fa fa-eye password-toggle" onclick="togglePassword('login-pass', this)"></i>
+                </div>
+            </div>
+            <div style="text-align: right; margin-bottom: 15px;">
+                <a onclick="showView('forgot')" style="color: var(--primary-color); font-size: 0.85rem; cursor: pointer;">Forgot Password?</a>
+            </div>
+            <button class="btn" onclick="handleLogin()">Login</button>
+            
+            <div class="auth-links">
+                New User? <a onclick="showView('register')">Register Here</a>
+            </div>
+        </div>
+
+        <div id="register-card" class="auth-card">
+            <h2>Create Account</h2>
+            <div class="input-group">
+                <label>New Username</label>
+                <input type="text" id="reg-user" placeholder="Choose a username">
+            </div>
+            <div class="input-group">
+                <label>Set Password</label>
+                <div class="input-wrapper">
+                    <input type="password" id="reg-pass" placeholder="Create password">
+                    <i class="fa fa-eye password-toggle" onclick="togglePassword('reg-pass', this)"></i>
+                </div>
+            </div>
+            <div class="input-group">
+                <label>Email Address</label>
+                <input type="email" id="reg-email" placeholder="example@gmail.com">
+            </div>
+            <button class="btn" onclick="handleRegister()">Register</button>
+            <button class="btn btn-outline" onclick="showView('login')">Back to Login</button>
+        </div>
+
+        <div id="forgot-card" class="auth-card">
+            <h2>Reset Password</h2>
+            <p>Enter your registered email ID to receive a One Time Password (OTP).</p>
+            <div class="input-group">
+                <label>Email Address</label>
+                <input type="email" id="forgot-email" placeholder="username@mail.com">
+            </div>
+            <button class="btn" onclick="handleForgot()">Send OTP</button>
+            <button class="btn btn-outline" onclick="showView('login')">Back to Login</button>
+        </div>
+
+    </section>
+
+    <script>
+        /* --- UTILITY: Toast Notification System --- */
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            
+            const iconClass = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
+            
+            toast.innerHTML = `<i class="fa ${iconClass}"></i> <span>${message}</span>`;
+            
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.animation = 'slideIn 0.3s ease reverse';
+                setTimeout(() => toast.remove(), 300);
+            }, 4000);
+        }
+
+        /* --- UTILITY: Switch Auth Views --- */
+        function showView(viewName) {
+            document.querySelectorAll('.auth-card').forEach(el => el.classList.remove('active'));
+            document.getElementById(`${viewName}-card`).classList.add('active');
+        }
+
+        /* --- FUNCTION: Toggle Password Visibility --- */
+        function togglePassword(inputId, iconElement) {
+            const input = document.getElementById(inputId);
+            if (input.type === "password") {
+                input.type = "text";
+                iconElement.classList.remove('fa-eye');
+                iconElement.classList.add('fa-eye-slash');
+            } else {
+                input.type = "password";
+                iconElement.classList.remove('fa-eye-slash');
+                iconElement.classList.add('fa-eye');
+            }
+        }
+
+        /* --- LOGIC: Login --- */
+        async function handleLogin() {
+            const username = document.getElementById('login-user').value;
+            const password = document.getElementById('login-pass').value;
+
+            try {
+                const res = await fetch("/login", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const data = await res.json();
+
+                if (data.success) {
+                    showToast("Login successful", "success");
+                    // Store user data in localStorage
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                    // Redirect to dashboard
+                    window.location.href = "/dashboard";
+                } else {
+                    showToast(data.message, "error");
+                }
+            } catch (e) {
+                showToast("Server error", "error");
+            }
+        }
+
+        /* --- LOGIC: Registration --- */
+        async function handleRegister() {
+            const username = document.getElementById('reg-user').value;
+            const email = document.getElementById('reg-email').value;
+            const password = document.getElementById('reg-pass').value;
+
+            if (!username || !email || !password) {
+                showToast("All fields are required", "error");
+                return;
+            }
+
+            if (!email.endsWith("@gmail.com")) {
+                showToast("Please enter a valid Gmail address", "error");
+                return;
+            }
+
+            try {
+                const res = await fetch("/register", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        username: username,
+                        email: email,
+                        password: password
+                    })
+                });
+
+                const data = await res.json();
+
+                if (data.success) {
+                    showToast("Registration successful!", "success");
+                    showView('login');
+                } else {
+                    showToast(data.message, "error");
+                }
+            } catch (err) {
+                showToast("Server not reachable", "error");
+                console.error(err);
+            }
+        }
+
+        /* --- LOGIC: Forgot Password --- */
+        function handleForgot() {
+            const email = document.getElementById('forgot-email').value;
+            if(email.includes('@')) {
+                showToast(`OTP Sent to ${email}`, "success");
+            } else {
+                showToast("Please enter a valid email", "error");
+            }
+        }
+    </script>
+</body>
+</html>
