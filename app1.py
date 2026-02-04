@@ -8,8 +8,8 @@ import random
 import datetime
 
 # Supabase Configuration
-SUPABASE_URL = "https://fatwlmmxmgaprrdecsec.supabase.co"
-SUPABASE_KEY = "sb_publishable_87ysThu2h81upqDbgKNLJQ_1bf8DQ_5"
+SUPABASE_URL = "------------------------"
+SUPABASE_KEY = "-----------------------"
 
 SUPABASE_HEADERS = {
     "apikey": SUPABASE_KEY,
@@ -21,8 +21,8 @@ app = Flask(__name__, template_folder='template')
 
 # Email OTP Function
 def send_otp_email(to_email, otp):
-    sender_email = os.getenv("abhiramkrv@gmail.com")
-    sender_pass = os.getenv("jazq egep eelz nccs")
+    sender_email = os.getenv("------------------")
+    sender_pass = os.getenv("------------")
 
     msg = MIMEMultipart()
     msg["From"] = sender_email
